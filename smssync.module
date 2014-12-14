@@ -16,7 +16,7 @@ function smssync_init()
  */
 function smssync_install()
 {
-    // Create the default webform type.
+    // Create the custom content type
     $content_type = array
     (
         'type' => 'sms',
@@ -35,7 +35,7 @@ function smssync_install()
 
     node_add_body_field($content_type);
 
-    //Create the custom fields
+    //Create the custom fields for the content type
     foreach (_smssync_installed_fields() as $field)
     {
         field_create_field($field);
@@ -45,34 +45,6 @@ function smssync_install()
     {
         field_create_instance($instance);
     }
-
-    /*
-    //  Create the field definition array.
-    $field = array(
-        'field_name' => 'smssync_from',
-        'type' => 'text',
-    );
-
-    //  Create the field.
-    $field = field_create_field( $field );
-
-    //  Create the field instance definition array.
-   
-    field_create_instance($instance);
-
-    $instance = array(
-        'field_name' => $field[ 'smssync_deviceid' ],
-        'entity_type' => 'node',
-        'bundle' => 'sms',
-        'description' => 'The device ID',
-        'label' => 'Device ID',
-        'widget' => array(
-            'type' => 'textfield',
-        ),
-    );
-
-    field_create_instance($instance);
-     * */
 }
 
 /**
@@ -114,6 +86,10 @@ function _smssync_installed_fields()
      );
  
 }
+
+/**
+ * Details of the custom fields
+ */
 function _smssync_installed_instances()
 {
     $t = get_t();
@@ -267,7 +243,6 @@ function show_configuration()
 function configure_smssync()
 {
     return drupal_get_form("smssync_settings_form");
-    //return t("Use the following configuration options on the SMSsync app on Android:");
 }
 
 /**
@@ -441,12 +416,9 @@ function save_message()
     * Now we have retrieved the data sent over by SMSsync
     * via HTTP. Next thing to do is to do something with
     * the data. Either echo it or write it to a file or even
-    * store it in a database. This is entirely up to you.
-    * After, return a JSON string back to SMSsync to know
-    * if the web service received the message successfully or not.
+    * store it in a database.
     *
-    * In this demo, we are just going to save the data
-    * received into a text file.
+    * What we do here is to write the SMS message as a node
     *
     */
 
@@ -488,8 +460,7 @@ function save_message()
 
             $node->language = LANGUAGE_NONE; // Or e.g. 'en' if locale is enabled
 
-//            $node->uid = 1; // UID of the author of the node; or use $node->name
-            $node->uid = $device_id; // UID of the author of the node; or use $node->name
+            $node->uid = $device_id; // UID of the author of the node; We need a valid registered user in order to write the nodes
 
             $node->body[$node->language][0]['value'] = $body;
             $node->body[$node->language][0]['summary'] = text_summary($body);
@@ -500,20 +471,13 @@ function save_message()
             $node->smssync_message_id[$node->language][0]['value'] = $message_id;
             $node->smssync_device_id[$node->language][0]['value'] = $device_id;
 
-
             // I prefer using pathauto, which would override the below path
             $path = 'node_created_on' . date('YmdHis');
             $node->path = array('alias' => $path);
 
             $account = user_load($device_id);
 
-            if ($account->uid != $device_id)
-            {
-                // Invalid uid
-                $success = FALSE;
-                $error = "Invalid user!";
-            }
-            else
+            if ($account->uid == $device_id)
             {
                 // Valid uid
                 if ($node === node_submit($node))
@@ -521,8 +485,12 @@ function save_message()
                         node_save($node);
                 }
             }
-
-            
+            else
+            {
+                // Invalid uid
+                $success = FALSE;
+                $error = "Invalid user!";
+            }
 
             $response = drupal_json_encode([
                     "payload"=> [
@@ -543,34 +511,4 @@ function save_message()
     {
         drupal_goto("smssync");
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//    $vars = array();
-//    $vars['type']="ul";
-//    $vars['title'] = "";
-//    $vars['attributes']=array("");
-//    $vars['items'][0]="Use the following configuration options on the SMSsync app on Android:";
-//
-//    return theme_item_list($vars);
 }
