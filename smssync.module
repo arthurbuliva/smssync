@@ -189,18 +189,19 @@ function smssync_menu()
 {
     $items = array();
 
-    $items['smssync'] = array
+	 $items['smssync'] = array
     (
-        'title' => 'SMSSync by Ushahidi',
+        'title' => 'SMSSync Configuration',
         'page callback' => 'show_configuration',
         'access arguments' => array('access content'),
         'access callback' => TRUE,
     );
-	
-    $items['smssync/save'] = array
+
+    $items['smssync/listen'] = array
     (
         'title' => 'SMSSync by Ushahidi',
-        'page callback' => 'save_message',
+        //'page callback' => 'save_message',
+		'page callback' => 'smssync_listen',
         'access arguments' => array('access content'),
         'type' => MENU_CALLBACK,
     );
@@ -222,12 +223,20 @@ function smssync_menu()
 function show_configuration()
 {
     global $user;
+
+	//Reload the page
+
+    //$path = isset($_GET['q']) ? $_GET['q'] : '<front>';
+
+    //$link = url($path, array('absolute' => TRUE));
+
+	$frontpage = $GLOBALS['base_root'] . base_path();
     
     $description = "Use the following configuration options on the SMSsync app on Android:";
     $description .= "<ul>";
     $description .= "<li>Title: SMSsync (actually you can call this whatever you want to)</li>";
     $description .= "<li>Secret key: " . variable_get('smssync_secret_key', "123456") . "</li>";
-    $description .= "<li>Sync URL: " . $GLOBALS['base_root'] . '/?q=smssync/save' . "</li>";
+    $description .= "<li>Sync URL: " . $frontpage . '?q=smssync/save' . "</li>";
     $description .= "<li>Device ID: " . $user->uid . "</li>";
     $description .= "</ul>";
     $description .= "The title of your SMS messages will be in this format:<br />";
@@ -341,8 +350,36 @@ function smssync_settings_form_submit($form, &$form_state)
 }
 
 /**
- * Save incoming messages from SMSsync android app
- */
+* What happens when we start running?
+*/
+function smssync_listen()
+{
+	if($_SERVER['REQUEST_METHOD'] === 'POST')
+	{
+		if(isset($_GET['task']) AND $_GET['task'] === 'result')
+		{
+			//get_sms_delivery_report();
+		}
+		else if( isset($_GET['task']) && $_GET['task'] === 'sent')
+		{
+			//get_sent_message_uuids();
+		}
+		else
+		{
+			save_message();
+		}
+	}
+	else
+	{
+		//send_task();
+	}
+
+
+}
+
+/**
+* Saves the messages(SMSs) sent by SMSsync as a POST request.
+*/
 function save_message() 
 {
     /**
@@ -350,11 +387,11 @@ function save_message()
     */
     if (isset($_POST['from']))
     {
-            $from = $_POST['from'];
+        $from = $_POST['from'];
     }
     else
     {
-            $error = 'The from variable was not set';
+        $error = 'The from variable was not set';
     }
 
     /**
@@ -362,11 +399,11 @@ function save_message()
     */
     if (isset($_POST['message']))
     {
-            $message = $_POST['message'];
+        $message = $_POST['message'];
     }
     else
     {
-            $error = 'The message variable was not set';
+        $error = 'The message variable was not set';
     }
 
     /**
@@ -426,7 +463,8 @@ function save_message()
             (!empty($from))
             AND (!empty($message))
             AND (!empty($sent_timestamp))
-            AND (!empty($message_id)))
+            AND (!empty($message_id))
+		)
     {
             /* The screte key set here is 123456. Make sure you enter
             * that on SMSsync.
@@ -499,16 +537,79 @@ function save_message()
                     ]
             ]);
 
-            // Avoid caching
-            header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
-            header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Date in the past
-            header("Content-type: application/json; charset=utf-8");
-
-            echo $response;
+            send_response($response);
     }
 
     else
     {
-        drupal_goto("smssync");
+		$success = FALSE;
+        $error = "Critical data missing!";
+
+        $response = drupal_json_encode([
+                    "payload"=> [
+                    "success"=>$success,
+                    "error" => $error
+                    ]
+            ]);
+
+        send_response($response);
     }
+}
+
+/**
+* Implements the task feature. Sends messages to SMSsync to be sent as
+* SMS to users.
+*/
+function send_task()
+{
+	/**
+	* Comment the code below out if you want to send an instant
+	* reply as SMS to the user.
+	*
+	* This feature requires the "Get reply from server" checked on SMSsync.
+	*/
+	if (isset($_GET['task']) AND $_GET['task'] === 'send')
+	{
+		$m = "Sample Task Message";
+		$f = "+819029842384";
+		$s = "true";
+		$reply[0] = [
+			"to" => $f,
+			"message" => $m,
+			"uuid" => "1ba368bd-c467-4374-bf28"
+		];
+		 
+		// Send JSON response back to SMSsync
+		$response = json_encode
+		(
+			["payload"=>[
+			"success"=>$s,
+			"task"=>"send",
+			"secret" => "123456",
+			"messages"=>array_values($reply)]
+		]);
+		 
+		send_response($response);
+	}
+}
+
+/**
+* Send a response back to the user
+*/
+function send_response($response)
+{
+	// Avoid caching
+	header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
+	header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Date in the past
+	header("Content-type: application/json; charset=utf-8");
+	 
+	echo $response;
+}
+
+/**
+* How to test
+*/
+function test_smssync()
+{
+	//curl --data "from=09048370465&message=sampletextmessage&secret=123456&device_id=1&sent_timestamp=1234567&message_id=67890" http://localhost/seven/?q=smssync/save
 }
