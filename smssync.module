@@ -225,9 +225,7 @@ function show_configuration()
     global $user;
 
 	//Reload the page
-
     //$path = isset($_GET['q']) ? $_GET['q'] : '<front>';
-
     //$link = url($path, array('absolute' => TRUE));
 
 	$frontpage = $GLOBALS['base_root'] . base_path();
@@ -371,7 +369,8 @@ function smssync_listen()
 	}
 	else
 	{
-		//send_task();
+		send_task();
+		//send_messages_uuids_for_sms_delivery_report();
 	}
 
 
