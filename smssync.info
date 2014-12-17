@@ -1,7 +1,6 @@
 name = smssync
 description = Module for saving messages from SMSsync by Ushahidi into Drupal
 package = Ushahidi
-version = VERSION
 core = 7.x
 
 files[] = smssync.install

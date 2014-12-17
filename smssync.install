@@ -1,20 +1,22 @@
 <?php
 /**
- * Implementation of hook_install()
+ * Implements hook_install()
  */
 function smssync_install()
 {
+    $t = get_t();
+
     // Create the custom content type
     $content_type = array
     (
         'type' => 'sms',
         'name' => t('SMS Message'),
         'base' => 'node_content',
-        'description' => st('Create a new SMS Message.'),
+        'description' => $t('Create a new SMS Message.'),
         'custom' => TRUE,
         'modified' => TRUE,
         'locked' => FALSE,
-        'body_label' => st('Message')
+        'body_label' => $t('Message')
     );
 
 
@@ -40,8 +42,6 @@ function smssync_install()
  */
 function _smssync_installed_fields()
 {
-    $t = get_t();
-
     return array
     (
         'smssync_timestamp' => array

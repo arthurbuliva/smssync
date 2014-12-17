@@ -150,12 +150,12 @@ function smssync_settings_form_validate($form, &$form_state)
     {
         if($values['smssync_autorefresh_interval'] < 0)
         {
-            form_set_error('smssync_autorefresh_interval', 'Auto-refresh interval must be greater than or equal to zero');
+            form_set_error('smssync_autorefresh_interval', t('Auto-refresh interval must be greater than or equal to zero'));
         }
     }
     else
     {
-        form_set_error('smssync_autorefresh_interval', 'Auto-refresh interval must be a number');
+        form_set_error('smssync_autorefresh_interval', t('Auto-refresh interval must be a number'));
     }
 }
 
@@ -176,6 +176,7 @@ function smssync_settings_form_submit($form, &$form_state)
     variable_set('smssync_autorefresh_interval', $smssync_autorefresh_interval);
     variable_set('smssync_title_format', $smssync_title_format);
     variable_set('smssync_secret_key', $smssync_secret_key);
+    
     drupal_set_message($output);
 }
 
@@ -260,7 +261,6 @@ function save_message()
     * What we do here is to write the SMS message as a node
     *
     */
-
     if (
             (!empty($from))
             AND (!empty($message))
@@ -285,9 +285,14 @@ function save_message()
 
             $body = $string;
 
-            $node = new stdClass(); // Create a new node object
-            $node->type = "sms"; // Or page, article or whatever content type you like
-            node_object_prepare($node); // Set some default values
+            // Create a new node object
+            $node = new stdClass();
+            
+            // Or page, article or whatever content type you like
+            $node->type = "sms";
+            
+            // Set some default values
+            node_object_prepare($node);
 
             //Prepare the title
             $variables = array(
@@ -410,7 +415,7 @@ function save_log_to_file($message)
 {
     $filename = "log.txt";
 
-    file_put_contents($filename,  $log, FILE_APPEND | LOCK_EX);
+    file_put_contents($filename,  $message, FILE_APPEND | LOCK_EX);
 }
 
 /**
@@ -449,7 +454,6 @@ function smssync_listen()
         else if( isset($_GET['task']) && $_GET['task'] === 'send')
         {
             //get_sent_message_uuids();
-
             //TODO: Clear these
             $log = date("D M d, Y (H:m:s)", strtotime("now")) . ": " . $_SERVER['REQUEST_METHOD'];
             $log .= " Task received. Task value is " . $_GET['task'] . "\n";
