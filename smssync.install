@@ -1,0 +1,171 @@
+<?php
+/**
+ * Implementation of hook_install()
+ */
+function smssync_install()
+{
+    // Create the custom content type
+    $content_type = array
+    (
+        'type' => 'sms',
+        'name' => t('SMS Message'),
+        'base' => 'node_content',
+        'description' => st('Create a new SMS Message.'),
+        'custom' => TRUE,
+        'modified' => TRUE,
+        'locked' => FALSE,
+        'body_label' => st('Message')
+    );
+
+
+    $content_type = node_type_set_defaults($content_type);
+    node_type_save($content_type);
+
+    node_add_body_field($content_type);
+
+    //Create the custom fields for the content type
+    foreach (_smssync_installed_fields() as $field)
+    {
+        field_create_field($field);
+    }
+
+    foreach (_smssync_installed_instances() as $instance)
+    {
+        field_create_instance($instance);
+    }
+}
+
+/**
+ * The custom fields
+ */
+function _smssync_installed_fields()
+{
+    $t = get_t();
+
+    return array
+    (
+        'smssync_timestamp' => array
+        (
+            'field_name' => 'smssync_timestamp',
+            'cardinality' => 1,
+            'type'        => 'text',
+        ),
+
+        'smssync_message_from' => array
+        (
+            'field_name' => 'smssync_message_from',
+            'cardinality' => 1,
+            'type'        => 'text',
+        ),
+
+        'smssync_message_id' => array
+        (
+            'field_name' => 'smssync_message_id',
+            'cardinality' => 1,
+            'type'        => 'text',
+        ),
+
+        'smssync_device_id' => array
+        (
+            'field_name' => 'smssync_device_id',
+            'cardinality' => 1,
+            'type'        => 'text',
+        ),
+     );
+ 
+}
+
+/**
+ * Details of the custom fields
+ */
+function _smssync_installed_instances()
+{
+    $t = get_t();
+
+    return array
+    (
+       'smssync_timestamp' => array
+        (
+            'field_name' => 'smssync_timestamp',
+            'label'       => $t('Message Timestamp'),
+            'bundle' => 'sms',
+            'entity_type' => 'node',
+
+            'widget'      => array
+            (
+                    'type'    => 'text',
+            ),
+            'display' => array
+            (
+                'default' => array
+                (
+                        'label' => 'above',
+                ),
+            ),
+            'description' => 'The time at which the message was sent',
+        ),
+
+       'smssync_origin' => array
+        (
+            'field_name' => 'smssync_message_from',
+            'label'       => $t('Origin'),
+            'bundle' => 'sms',
+            'entity_type' => 'node',
+
+            'widget'      => array
+            (
+                    'type'    => 'text',
+            ),
+            'display' => array
+            (
+                'default' => array
+                (
+                        'label' => 'above',
+                ),
+            ),
+            'description' => 'The sender of the message',
+        ),
+
+       'smssync_id' => array
+        (
+            'field_name' => 'smssync_message_id',
+            'label'       => $t('Message ID'),
+            'bundle' => 'sms',
+            'entity_type' => 'node',
+
+            'widget'      => array
+            (
+                    'type'    => 'text',
+            ),
+            'display' => array
+            (
+                'default' => array
+                (
+                        'label' => 'above',
+                ),
+            ),
+            'description' => 'The unique id of the message',
+        ),
+
+       'device_id' => array
+        (
+            'field_name' => 'smssync_device_id',
+            'label'       => $t('Device ID'),
+            'bundle' => 'sms',
+            'entity_type' => 'node',
+
+            'widget'      => array
+            (
+                    'type'    => 'text',
+            ),
+            'display' => array
+            (
+                'default' => array
+                (
+                        'label' => 'above',
+                ),
+            ),
+            'description' => 'The id of the device that received the message',
+        ),
+    );
+}

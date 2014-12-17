@@ -4,7 +4,9 @@ package = Ushahidi
 version = VERSION
 core = 7.x
 
+files[] = smssync.install
 files[] = smssync.module
+files[] = savemessage.inc
 
 #dependencies[] = cck
 
