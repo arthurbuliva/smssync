@@ -1,15 +1,29 @@
 <?php
 
 /**
+* Implementation of hook_permission()
+*/
+function smssync_permission() 
+{
+  return array
+  (
+    'access smssync' => array
+    (
+      'title' => t('Access SMSSync'),
+      'description' => t('Access the configuration parameters in order to configure SMSSync on Android'),
+    ),
+  );
+}
+
+/**
  * Implementation of hook_init()
- * @test This is still under test
  */
 function smssync_init()
 {
-    if(variable_get('smssync_autorefresh_interval', "0") > 0)
-    {
-        drupal_set_message("This page will reload in " . variable_get('smssync_autorefresh_interval', "0") . " seconds...");
-    }
+  if(variable_get('smssync_autorefresh_interval', "0") > 0)
+  {
+    drupal_set_message("This page will reload in " . variable_get('smssync_autorefresh_interval', "0") . " seconds...");
+  }
 }
 
 /**
@@ -17,63 +31,61 @@ function smssync_init()
  */
 function smssync_menu() 
 {
-    $items = array();
+  $items = array();
 
-	 $items['smssync'] = array
-    (
-        'title' => 'SMSSync Configuration',
-        'page callback' => 'show_configuration',
-        'access arguments' => array('access content'),
-        'access callback' => TRUE,
-    );
+  $items['smssync'] = array
+  (
+    'title' => 'SMSSync Configuration',
+    'page callback' => 'show_configuration',
+    'access arguments' => array('access smssync'),
+    'access callback' => TRUE,
+  );
 
-    $items['smssync/listen'] = array
-    (
-        'title' => 'SMSSync by Ushahidi',
-        //'page callback' => 'save_message',
+  $items['smssync/listen'] = array
+  (
+    'title' => 'SMSSync by Ushahidi',
+    //'page callback' => 'save_message',
 		'page callback' => 'smssync_listen',
-        'access arguments' => array('access content'),
-        'type' => MENU_CALLBACK,
-    );
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
 	
-    $items['admin/config/smssync'] = array
-    (
-        'title' => 'Configure SMSSync by Ushahidi',
-        'page callback' => 'configure_smssync',
-        'access arguments' => array('administer smssync'),
-        'type' => MENU_CALLBACK,
-    );
+  $items['admin/config/smssync'] = array
+  (
+    'title' => 'Configure SMSSync by Ushahidi',
+    'page callback' => 'configure_smssync',
+    'access arguments' => array('administer smssync'),
+    'type' => MENU_CALLBACK,
+  );
 
-    return $items;
+  return $items;
 }
 
 /**
  * Show the configuration options set in the system
- * These are displayed for the user to be able to configure
- * SMSsync on their mobile device
  */
 function show_configuration()
 {
-    global $user;
+  global $user;
 
 	//Reload the page
-    //$path = isset($_GET['q']) ? $_GET['q'] : '<front>';
-    //$link = url($path, array('absolute' => TRUE));
+  //$path = isset($_GET['q']) ? $_GET['q'] : '<front>';
+  //$link = url($path, array('absolute' => TRUE));
 
 	$frontpage = $GLOBALS['base_root'] . base_path();
-    
-    $description = "Use the following configuration options on the SMSsync app on Android:";
-    $description .= "<ul>";
-    $description .= "<li>Title: SMSsync (actually you can call this whatever you want to)</li>";
-    $description .= "<li>Secret key: " . variable_get('smssync_secret_key', "123456") . "</li>";
-    $description .= "<li>Sync URL: " . $frontpage . '?q=smssync/listen' . "</li>";
-    $description .= "<li>Unique ID: " . $user->uid . "</li>";
-    $description .= "</ul>";
-    $description .= "The title of your SMS messages will be in this format:<br />";
+  
+  $description = "Use the following configuration options on the SMSsync app on Android:";
+  $description .= "<ul>";
+  $description .= "<li>Title: SMSsync (actually you can call this whatever you want to)</li>";
+  $description .= "<li>Secret key: " . variable_get('smssync_secret_key', "123456") . "</li>";
+  $description .= "<li>Sync URL: " . $frontpage . '?q=smssync/listen' . "</li>";
+  $description .= "<li>Unique ID: " . $user->uid . "</li>";
+  $description .= "</ul>";
+  $description .= "The title of your SMS messages will be in this format:<br />";
 
-    $description .= variable_get('smssync_title_format', "SMS Message from @from");
+  $description .= variable_get('smssync_title_format', "SMS Message from @from");
    
-    return t($description);
+  return t($description);
 }
 
 /**
@@ -81,7 +93,7 @@ function show_configuration()
  */
 function configure_smssync()
 {
-    return drupal_get_form("smssync_settings_form");
+  return drupal_get_form("smssync_settings_form");
 }
 
 /**
@@ -89,54 +101,54 @@ function configure_smssync()
  */
 function smssync_settings_form($form, &$form_state)
 {
-    $form = array();
+  $form = array();
 
-    $description = "The format in which to save the title of the SMS message. Available tokens are";
-    $description .= "<ul>";
-    $description .= "<li>@from</li>";
-    $description .= "<li>@message_id</li>";
-    $description .= "<li>@timestamp</li>";
-    $description .= "</ul>";
+  $description = "The format in which to save the title of the SMS message. Available tokens are";
+  $description .= "<ul>";
+  $description .= "<li>@from</li>";
+  $description .= "<li>@message_id</li>";
+  $description .= "<li>@timestamp</li>";
+  $description .= "</ul>";
 
-    $form['smssync_title_format'] = array(
-        '#type' => 'textfield',
-        '#title' => t('Title format'),
-        '#default_value' => variable_get('smssync_title_format', "SMS Message from @from"),
-        '#size' => 50,
-        '#maxlength' => 50,
-        '#description' => t($description),
-        '#required' => TRUE,
-      );
-
-    $form['smssync_secret_key'] = array(
-        '#type' => 'password',
-        '#title' => t('Secret key'),
-        '#default_value' => variable_get('smssync_secret_key', "123456"),
-        '#size' => 50,
-        '#maxlength' => 50,
-        '#description' => t("The secret key. Other people call it \"Password\""),
-        '#required' => TRUE,
-      );
-
-    $form['smssync_autorefresh_interval'] = array(
-        '#type' => 'textfield',
-        '#title' => t('Auto-refresh interval'),
-        '#default_value' => variable_get('smssync_autorefresh_interval', "0"),
-        '#size' => 10,
-        '#maxlength' => 10,
-        '#description' => t("If you would like to watch the messages coming in, "
-                . "set this to a number greater than 0 and we will refresh the "
-                . "page for you after the specified seconds. A low number is not "
-                . "recommended as you may overwhelm your server"),
-        '#required' => TRUE,
-      );
-
-    $form['submit'] = array(
-        '#type' => 'submit',
-        '#value' => 'Save',
+  $form['smssync_title_format'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Title format'),
+    '#default_value' => variable_get('smssync_title_format', "SMS Message from @from"),
+    '#size' => 50,
+    '#maxlength' => 50,
+    '#description' => t($description),
+    '#required' => TRUE,
     );
 
-    return $form;
+  $form['smssync_secret_key'] = array(
+    '#type' => 'password',
+    '#title' => t('Secret key'),
+    '#default_value' => variable_get('smssync_secret_key', "123456"),
+    '#size' => 50,
+    '#maxlength' => 50,
+    '#description' => t("The secret key. Other people call it \"Password\""),
+    '#required' => TRUE,
+    );
+
+  $form['smssync_autorefresh_interval'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Auto-refresh interval'),
+    '#default_value' => variable_get('smssync_autorefresh_interval', "0"),
+    '#size' => 10,
+    '#maxlength' => 10,
+    '#description' => t("If you would like to watch the messages coming in, "
+        . "set this to a number greater than 0 and we will refresh the "
+        . "page for you after the specified seconds. A low number is not "
+        . "recommended as you may overwhelm your server"),
+    '#required' => TRUE,
+    );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Save',
+  );
+
+  return $form;
 }
 
 /**
@@ -144,19 +156,19 @@ function smssync_settings_form($form, &$form_state)
  */
 function smssync_settings_form_validate($form, &$form_state)
 {
-    $values = $form_state['values'];
+  $values = $form_state['values'];
 
-    if(is_numeric($values['smssync_autorefresh_interval']))
+  if(is_numeric($values['smssync_autorefresh_interval']))
+  {
+    if($values['smssync_autorefresh_interval'] < 0)
     {
-        if($values['smssync_autorefresh_interval'] < 0)
-        {
-            form_set_error('smssync_autorefresh_interval', t('Auto-refresh interval must be greater than or equal to zero'));
-        }
+      form_set_error('smssync_autorefresh_interval', 'Auto-refresh interval must be greater than or equal to zero');
     }
-    else
-    {
-        form_set_error('smssync_autorefresh_interval', t('Auto-refresh interval must be a number'));
-    }
+  }
+  else
+  {
+    form_set_error('smssync_autorefresh_interval', 'Auto-refresh interval must be a number');
+  }
 }
 
 /**
@@ -164,20 +176,69 @@ function smssync_settings_form_validate($form, &$form_state)
  */
 function smssync_settings_form_submit($form, &$form_state)
 {
-    $values = $form_state['values'];
+  $values = $form_state['values'];
 
-    $smssync_title_format = $values['smssync_title_format'];
-    $smssync_autorefresh_interval = $values['smssync_autorefresh_interval'];
-    $smssync_secret_key = $values['smssync_secret_key'];
+  $smssync_title_format = $values['smssync_title_format'];
+  $smssync_autorefresh_interval = $values['smssync_autorefresh_interval'];
+  $smssync_secret_key = $values['smssync_secret_key'];
 
-    $output = "The title format is " . $smssync_title_format;
-    $output .= " and the secret key is " . $smssync_secret_key;
+  $output = "The title format is " . $smssync_title_format;
+  $output .= " and the secret key is " . $smssync_secret_key;
 
-    variable_set('smssync_autorefresh_interval', $smssync_autorefresh_interval);
-    variable_set('smssync_title_format', $smssync_title_format);
-    variable_set('smssync_secret_key', $smssync_secret_key);
-    
-    drupal_set_message($output);
+  variable_set('smssync_autorefresh_interval', $smssync_autorefresh_interval);
+  variable_set('smssync_title_format', $smssync_title_format);
+  variable_set('smssync_secret_key', $smssync_secret_key);
+  drupal_set_message($output);
+}
+
+/**
+* What happens when we start running?
+*/
+function smssync_listen()
+{
+
+	$log = date("D M d, Y (H:m:s)", strtotime("now")) . ": Request received with method " . $_SERVER['REQUEST_METHOD'] . "\n";
+	
+	file_put_contents("log.txt",  $log, FILE_APPEND | LOCK_EX);	
+	
+	if($_SERVER['REQUEST_METHOD'] === 'POST')
+	{
+		if(isset($_GET['task']) AND $_GET['task'] === 'result')
+		{
+			$log = date("D M d, Y (H:m:s)", strtotime("now")) . ": " . $_SERVER['REQUEST_METHOD'];
+			$log .= " Task received. Task value is " . $_GET['task'] . "\n";
+	
+			file_put_contents("log.txt",  $log, FILE_APPEND | LOCK_EX);
+			
+			send_task();
+		}
+		else if( isset($_GET['task']) && $_GET['task'] === 'send')
+		{
+			//get_sent_message_uuids();
+			
+			
+			$log = date("D M d, Y (H:m:s)", strtotime("now")) . ": " . $_SERVER['REQUEST_METHOD'];
+			$log .= " Task received. Task value is " . $_GET['task'] . "\n";
+	
+			file_put_contents("log.txt",  $log, FILE_APPEND | LOCK_EX);
+			
+			send_task();
+		}
+		else
+		{
+			$log = date("D M d, Y (H:m:s)", strtotime("now")) . ": Posting new node " . $_SERVER['REQUEST_METHOD'] . "\n";
+	
+			file_put_contents("log.txt",  $log, FILE_APPEND | LOCK_EX);
+			save_message();
+		}
+	}
+	else
+	{
+		send_task();
+		//send_messages_uuids_for_sms_delivery_report();
+	}
+
+
 }
 
 /**
@@ -185,182 +246,199 @@ function smssync_settings_form_submit($form, &$form_state)
 */
 function save_message() 
 {
-    /**
-    * Get the phone number that sent the SMS.
-    */
-    if (isset($_POST['from']))
-    {
-        $from = $_POST['from'];
-    }
-    else
-    {
-        $error = 'The from variable was not set';
-    }
+  /**
+  * Get the phone number that sent the SMS.
+  */
+  if (isset($_POST['from']))
+  {
+    $from = $_POST['from'];
+  }
+  else
+  {
+    $error = 'The from variable was not set';
+  }
 
-    /**
-    * Get the SMS aka the message sent.
-    */
-    if (isset($_POST['message']))
-    {
-        $message = $_POST['message'];
-    }
-    else
-    {
-        $error = 'The message variable was not set';
-    }
+  /**
+  * Get the SMS aka the message sent.
+  */
+  if (isset($_POST['message']))
+  {
+    $message = $_POST['message'];
+  }
+  else
+  {
+    $error = 'The message variable was not set';
+  }
 
-    /**
-    * Get the secret key set on SMSsync side
-    * for matching on the server side.
-    */
-    if (isset($_POST['secret']))
-    {
-            $secret = $_POST['secret'];
-    }
+  /**
+  * Get the secret key set on SMSsync side
+  * for matching on the server side.
+  */
+  if (isset($_POST['secret']))
+  {
+      $secret = $_POST['secret'];
+  }
 
 
-    /**
-    * Get the timestamp of the SMS
-    */
-    if(isset($_POST['sent_timestamp']))
-    {
-            $sent_timestamp = $_POST['sent_timestamp'];
-    }
+  /**
+  * Get the timestamp of the SMS
+  */
+  if(isset($_POST['sent_timestamp']))
+  {
+      $sent_timestamp = $_POST['sent_timestamp'];
+  }
 
-    /**
-    * Get the phone number of the device SMSsync is
-    * installed on.
-    */
-    if (isset($_POST['sent_to']))
-    {
-            $sent_to = $_POST['sent_to'];
-    }
+  /**
+  * Get the phone number of the device SMSsync is
+  * installed on.
+  */
+  if (isset($_POST['sent_to']))
+  {
+      $sent_to = $_POST['sent_to'];
+  }
 
-    /**
-    * Get the unique message id
-    */
-    if (isset($_POST['message_id']))
-    {
-            $message_id = $_POST['message_id'];
-    }
+  /**
+  * Get the unique message id
+  */
+  if (isset($_POST['message_id']))
+  {
+      $message_id = $_POST['message_id'];
+  }
 
-    /**
-    * Get device ID
-    */
-    if (isset($_POST['device_id']))
-    {
-            $device_id = $_POST['device_id'];
-    }
+  /**
+  * Get device ID
+  */
+  if (isset($_POST['device_id']))
+  {
+      $device_id = $_POST['device_id'];
+  }
 
-    /**
-    * Now we have retrieved the data sent over by SMSsync
-    * via HTTP. Next thing to do is to do something with
-    * the data. Either echo it or write it to a file or even
-    * store it in a database.
-    *
-    * What we do here is to write the SMS message as a node
-    *
-    */
-    if (
-            (!empty($from))
-            AND (!empty($message))
-            AND (!empty($sent_timestamp))
-            AND (!empty($message_id))
+  /**
+  * Now we have retrieved the data sent over by SMSsync
+  * via HTTP. Next thing to do is to do something with
+  * the data. Either echo it or write it to a file or even
+  * store it in a database.
+  *
+  * What we do here is to write the SMS message as a node
+  *
+  */
+
+  if (
+      (!empty($from))
+      AND (!empty($message))
+      AND (!empty($sent_timestamp))
+      AND (!empty($message_id))
 		)
+  {
+      /* The screte key set here is 123456. Make sure you enter
+      * that on SMSsync.
+      */
+      if (( $secret == variable_get('smssync_secret_key', "123456")))
+      {
+          $success = true;
+      }
+      else
+      {
+          $error = "The secret value sent from the device does not match the one on the server";
+      }
+
+      // now let's write the info sent by SMSsync
+      $string = $message;
+
+      $body = $string;
+
+      $node = new stdClass(); // Create a new node object
+      $node->type = "sms"; // Or page, or whatever content type you like
+      node_object_prepare($node); // Set some default values
+
+      //Prepare the title
+      $variables = array(
+        '@from' => $from,
+        '@message_id' => $message_id,
+        '@timestamp' => $sent_timestamp,
+          );
+
+      $node->title = format_string(variable_get('smssync_title_format', "SMS Message from @from"), $variables);
+
+      $node->language = LANGUAGE_NONE; // Or e.g. 'en' if locale is enabled
+
+      $node->uid = $device_id; // UID of the author of the node; We need a valid registered user in order to write the nodes
+
+      $node->body[$node->language][0]['value'] = $body;
+      $node->body[$node->language][0]['summary'] = text_summary($body);
+      $node->body[$node->language][0]['format'] = 'filtered_html';
+
+      $node->smssync_timestamp[$node->language][0]['value'] = $sent_timestamp;
+      $node->smssync_message_from[$node->language][0]['value'] = $from;
+      $node->smssync_message_id[$node->language][0]['value'] = $message_id;
+      $node->smssync_device_id[$node->language][0]['value'] = $device_id;
+
+      // I prefer using pathauto, which would override the below path
+      $path = 'node_created_on' . date('YmdHis');
+      $node->path = array('alias' => $path);
+
+      $account = user_load($device_id);
+
+      if ($account->uid == $device_id)
+      {
+        // Valid uid
+        if ($node === node_submit($node))
+        { // Prepare node for saving
+            node_save($node);
+        }
+      }
+      else
+      {
+        // Invalid uid
+        $success = FALSE;
+        $error = "Invalid user!";
+      }
+
+      $response = json_encode([
+          "payload"=> [
+          "success"=>$success,
+          "error" => $error
+          ]
+      ]);
+
+      send_response($response);
+  }
+
+  else
+  {
+		$success = FALSE;
+		
+		$error = "Critical data missing: ";
+		
+		if(empty($from))
+		{
+			$error .= "'FROM' field is empty. ";		
+		}
+		
+    if(empty($message))
     {
-            /* The screte key set here is 123456. Make sure you enter
-            * that on SMSsync.
-            */
-            if (( $secret == variable_get('smssync_secret_key', "123456")))
-            {
-                    $success = true;
-            }
-            else
-            {
-                    $error = "The secret value sent from the device does not match the one on the server";
-            }
-
-            // now let's write the info sent by SMSsync
-            $string = $message;
-
-            $body = $string;
-
-            // Create a new node object
-            $node = new stdClass();
-            
-            // Or page, article or whatever content type you like
-            $node->type = "sms";
-            
-            // Set some default values
-            node_object_prepare($node);
-
-            //Prepare the title
-            $variables = array(
-                '@from' => $from,
-                '@message_id' => $message_id,
-                '@timestamp' => $sent_timestamp,
-                    );
-
-            $node->title = format_string(variable_get('smssync_title_format', "SMS Message from @from"), $variables);
-
-            $node->language = LANGUAGE_NONE; // Or e.g. 'en' if locale is enabled
-
-            $node->uid = $device_id; // UID of the author of the node; We need a valid registered user in order to write the nodes
-
-            $node->body[$node->language][0]['value'] = $body;
-            $node->body[$node->language][0]['summary'] = text_summary($body);
-            $node->body[$node->language][0]['format'] = 'filtered_html';
-
-            $node->smssync_timestamp[$node->language][0]['value'] = $sent_timestamp;
-            $node->smssync_message_from[$node->language][0]['value'] = $from;
-            $node->smssync_message_id[$node->language][0]['value'] = $message_id;
-            $node->smssync_device_id[$node->language][0]['value'] = $device_id;
-
-            // I prefer using pathauto, which would override the below path
-            $path = 'node_created_on' . date('YmdHis');
-            $node->path = array('alias' => $path);
-
-            $account = user_load($device_id);
-
-            if ($account->uid == $device_id)
-            {
-                // Valid uid
-                if ($node === node_submit($node))
-                { // Prepare node for saving
-                        node_save($node);
-                }
-            }
-            else
-            {
-                // Invalid uid
-                $success = FALSE;
-                $error = "Invalid user";
-            }
-
-            $response = json_encode([
-                    "payload"=> [
-                    "success"=>$success,
-                    "error" => $error
-                    ]
-            ]);
-
-            send_response($response);
+    	$error .= "'MESSAGE' field is empty. ";
     }
-
-    else
+    
+    if(empty($sent_timestamp))
     {
-	$success = FALSE;
-        $error = "Critical data missing!";
-
-        $response = json_encode([
-                    "payload"=> [
-                    "success"=>$success,
-                    "error" => $error
-                    ]
-            ]);
-
-        send_response($response);
+    	$error .= "'SENT_TIMESTAMP' field is empty. ";
     }
+    
+    if(empty($message_id))
+    {
+    	$error .= "'MESSAGE_ID' field is empty.";
+    }
+		
+		$response = json_encode([
+          "payload"=> [
+          "success"=>$success,
+          "error" => $error
+          ]
+      ]);
+
+    send_response($response);
+  }
 }
 
 /**
@@ -371,7 +449,8 @@ function send_task()
 {
 
 	$log = date("D M d, Y (H:m:s)", strtotime("now")) . ": Send task requested with method " . $_SERVER['REQUEST_METHOD'] . " with value " . $_GET['task'] . "\n";
-	save_log_to_file($log);
+	
+			file_put_contents("log.txt",  $log, FILE_APPEND | LOCK_EX);
 
 	/**
 	* Comment the code below out if you want to send an instant
@@ -379,43 +458,34 @@ function send_task()
 	*
 	* This feature requires the "Get reply from server" checked on SMSsync.
 	*/
-	if (isset($_GET['task']) AND $_GET['task'] === 'send')
-	{
-            $m = "Sample Task Message";
-            $f = "+254722407717";
-            $s = "true";
-            $reply[] = [
-                    "to" => $f,
-                    "message" => $m,
-                    "uuid" => "1ba368bd-c467-4374-bf28"
-            ];
-
-            // Send JSON response back to SMSsync
-            $response = json_encode
-            (
-                    ["payload"=>[
-                    "success"=>$s,
-                    "task"=>"send",
-                    "secret" => "123456",
-                    "messages"=>array_values($reply)]
-            ]);
-
-            $log = date("D M d, Y (H:m:s)", strtotime("now")) . ": Sending sms message" . "\n";
-            save_log_to_file($log);
-
-            send_response($response);
-	}
-}
-
-/**
- * Log messages to a file
- * TODO: Delete this function
- */
-function save_log_to_file($message)
-{
-    $filename = "log.txt";
-
-    file_put_contents($filename,  $message, FILE_APPEND | LOCK_EX);
+	//if (isset($_GET['task']) AND $_GET['task'] === 'send')
+	//{
+		$m = "Sample Task Message";
+		//$f = "+254722407717";
+		$f = "+819094220927";
+		$s = "true";
+		$reply[] = [
+			"to" => $f,
+			"message" => $m,
+			"uuid" => "1ba368bd-c467-4374-bf28"
+		];
+		 
+		// Send JSON response back to SMSsync
+		$response = json_encode
+		(
+			["payload"=>[
+			"success"=>$s,
+			"task"=>"send",
+			"secret" => "123456",
+			"messages"=>array_values($reply)]
+		]);
+		
+		$log = date("D M d, Y (H:m:s)", strtotime("now")) . ": Sending sms message" . "\n";
+	
+			file_put_contents("log.txt",  $log, FILE_APPEND | LOCK_EX);
+		 
+		send_response($response);
+	//}
 }
 
 /**
@@ -429,52 +499,6 @@ function send_response($response)
 	header("Content-type: application/json; charset=utf-8");
 	 
 	echo $response;
-}
-
-/**
-* Main listening point
-*/
-function smssync_listen()
-{
-    $log = date("D M d, Y (H:m:s)", strtotime("now")) . ": Request received with method " . $_SERVER['REQUEST_METHOD'] . "\n";
-
-    file_put_contents("log.txt",  $log, FILE_APPEND | LOCK_EX);
-
-    if($_SERVER['REQUEST_METHOD'] === 'POST')
-    {
-        if(isset($_GET['task']) AND $_GET['task'] === 'result')
-        {
-            //TODO: Clear these
-            $log = date("D M d, Y (H:m:s)", strtotime("now")) . ": " . $_SERVER['REQUEST_METHOD'];
-            $log .= " Task received. Task value is " . $_GET['task'] . "\n";
-            save_log_to_file($log);
-
-            send_task();
-        }
-        else if( isset($_GET['task']) && $_GET['task'] === 'send')
-        {
-            //get_sent_message_uuids();
-            //TODO: Clear these
-            $log = date("D M d, Y (H:m:s)", strtotime("now")) . ": " . $_SERVER['REQUEST_METHOD'];
-            $log .= " Task received. Task value is " . $_GET['task'] . "\n";
-            save_log_to_file($log);
-
-                send_task();
-        }
-        else
-        {
-            //TODO: Clear these
-            $log = date("D M d, Y (H:m:s)", strtotime("now")) . ": Posting new node " . $_SERVER['REQUEST_METHOD'] . "\n";
-            save_log_to_file($log);
-
-            save_message();
-        }
-    }
-    else
-    {
-            send_task();
-            //send_messages_uuids_for_sms_delivery_report();
-    }
 }
 
 /**
