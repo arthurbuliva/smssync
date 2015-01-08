@@ -452,18 +452,42 @@ function send_task()
 	
 			file_put_contents("log.txt",  $log, FILE_APPEND | LOCK_EX);
 
-	/**
-	* Comment the code below out if you want to send an instant
-	* reply as SMS to the user.
-	*
-	* This feature requires the "Get reply from server" checked on SMSsync.
-	*/
-	//if (isset($_GET['task']) AND $_GET['task'] === 'send')
-	//{
+	
+		//Get all outbox messages created by this user
+		global $user;
+		
+			
+		$result = db_query('SELECT nid FROM node WHERE type = :node_type', array(':node_type' => "outbox"));
+
+		$nodes = array();
+		
+		foreach ($result as $record)
+		{
+		  $nodes[] = $record->nid;
+		}
+		
+		var_export($nodes);
+		
+		foreach($nodes as $node_id)
+		{
+			$node = node_load($node_id);
+			
+			echo "Node status: " . $node->status;
+		}
+		
+exit(0);
+		
 		$m = "Sample Task Message";
-		//$f = "+254722407717";
 		$f = "+819094220927";
 		$s = "true";
+		$reply[] = [
+			"to" => $f,
+			"message" => $m,
+			"uuid" => "1ba368bd-c467-4374-bf28"
+		];
+
+		$m = "Hello world";
+		$f = "+254722407717";
 		$reply[] = [
 			"to" => $f,
 			"message" => $m,
@@ -482,10 +506,9 @@ function send_task()
 		
 		$log = date("D M d, Y (H:m:s)", strtotime("now")) . ": Sending sms message" . "\n";
 	
-			file_put_contents("log.txt",  $log, FILE_APPEND | LOCK_EX);
+			//file_put_contents("log.txt",  $log, FILE_APPEND | LOCK_EX);
 		 
 		send_response($response);
-	//}
 }
 
 /**
