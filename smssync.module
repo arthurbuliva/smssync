@@ -49,7 +49,7 @@ function smssync_menu()
     'title' => 'SMSSync Configuration',
     'page callback' => 'show_configuration',
     'access arguments' => array('access smssync'),
-    'access callback' => TRUE,
+    'access callback' => 'user_access',
   );
 
   $items['smssync/listen'] = array
