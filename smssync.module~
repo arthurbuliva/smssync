@@ -35,6 +35,9 @@ function smssync_init()
   {
     drupal_set_message("This page will reload in " . variable_get('smssync_autorefresh_interval', "0") . " seconds...");
   }
+  
+  
+  
 }
 
 /**

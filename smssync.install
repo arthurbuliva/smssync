@@ -210,30 +210,9 @@ function _smssync_outbox_installed_fields()
 {
   return array
   (
-    'smssync_outbox_timestamp' => array
-    (
-      'field_name' => 'smssync_outbox_timestamp',
-      'cardinality' => 1,
-      'type'    => 'text',
-    ),
-
     'smssync_destination' => array
     (
       'field_name' => 'smssync_destination',
-      'cardinality' => 1,
-      'type'    => 'text',
-    ),
-
-    'smssync_outbox_message_id' => array
-    (
-      'field_name' => 'smssync_outbox_message_id',
-      'cardinality' => 1,
-      'type'    => 'text',
-    ),
-
-    'smssync_outbox_device_id' => array
-    (
-      'field_name' => 'smssync_outbox_device_id',
       'cardinality' => 1,
       'type'    => 'text',
     ),
@@ -250,27 +229,6 @@ function _smssync_outbox_installed_instances()
 
   return array
   (
-     'smssync_outbox_timestamp' => array
-    (
-      'field_name' => 'smssync_outbox_timestamp',
-      'label'     => $t('Outbox Timestamp'),
-      'bundle' => 'outbox',
-      'entity_type' => 'node',
-
-      'widget'    => array
-      (
-          'type'  => 'text',
-      ),
-      'display' => array
-      (
-        'default' => array
-        (
-            'label' => 'above',
-        ),
-      ),
-      'description' => 'The time at which the message will be sent',
-    ),
-
      'smssync_destination' => array
     (
       'field_name' => 'smssync_destination',
@@ -290,48 +248,6 @@ function _smssync_outbox_installed_instances()
         ),
       ),
       'description' => 'The sender of the message',
-    ),
-
-     'smssync_outbox_message_id' => array
-    (
-      'field_name' => 'smssync_outbox_message_id',
-      'label'     => $t('Outbox Message ID'),
-      'bundle' => 'outbox',
-      'entity_type' => 'node',
-
-      'widget'    => array
-      (
-          'type'  => 'text',
-      ),
-      'display' => array
-      (
-        'default' => array
-        (
-            'label' => 'above',
-        ),
-      ),
-      'description' => 'The unique id of the message',
-    ),
-
-     'smssync_outbox_device_id' => array
-    (
-      'field_name' => 'smssync_outbox_device_id',
-      'label'     => $t('Outbox Device ID'),
-      'bundle' => 'outbox',
-      'entity_type' => 'node',
-
-      'widget'    => array
-      (
-          'type'  => 'text',
-      ),
-      'display' => array
-      (
-        'default' => array
-        (
-            'label' => 'above',
-        ),
-      ),
-      'description' => 'The id of the device that received the message',
     ),
   );
 }
