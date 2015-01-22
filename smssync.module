@@ -81,7 +81,7 @@ function show_configuration()
 
   $frontpage = $GLOBALS['base_root'] . base_path();
   
-  $description = t("Use the following configuration options on the SMSsync app on Android:";
+  $description = t("Use the following configuration options on the SMSsync app on Android:");
   $description .= "<ul>";
   $description .= "<li>" . t("Title: SMSsync (actually you can call this whatever you want to)") . "</li>";
   $description .= "<li>" . t("Secret key") . ": " . variable_get('smssync_secret_key', "123456") . "</li>";
