@@ -81,14 +81,14 @@ function show_configuration()
 
   $frontpage = $GLOBALS['base_root'] . base_path();
   
-  $description = t("Use the following configuration options on the SMSsync app on Android:");
+  $description = t("Use the following configuration options on the SMSsync app on Android:";
   $description .= "<ul>";
   $description .= "<li>" . t("Title: SMSsync (actually you can call this whatever you want to)") . "</li>";
   $description .= "<li>" . t("Secret key") . ": " . variable_get('smssync_secret_key', "123456") . "</li>";
   $description .= "<li>" . t("Sync URL") . ": " . $frontpage . 'smssync/listen' . "</li>";
   $description .= "<li>" . t("Unique ID") . ": " . $user->uid . "</li>";
   $description .= "</ul>";
- 
+  
   $description .= "<p>" . t("Alternatively scan this code and SMSSync will automatically configure itself for you") . "<img src='https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl=http://smssync.ushahidi.com/%2F&choe=UTF-8' title='Link to http://smssync.ushahidi.com/' />" . "</p>";
   
   $description .= t("The title of your SMS messages will be in this format") . ":<br />";
