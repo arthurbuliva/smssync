@@ -49,7 +49,7 @@ function smssync_menu()
     'title' => 'SMSSync Configuration',
     'page callback' => 'show_configuration',
     'access arguments' => array('access smssync'),
-    'access callback' => TRUE,
+    'access callback' => 'user_access',
   );
 
   $items['smssync/listen'] = array
@@ -81,15 +81,17 @@ function show_configuration()
 
   $frontpage = $GLOBALS['base_root'] . base_path();
   
-  $description = "Use the following configuration options on the SMSsync app on Android:";
+  $description = t("Use the following configuration options on the SMSsync app on Android:");
   $description .= "<ul>";
-  $description .= "<li>Title: SMSsync (actually you can call this whatever you want to)</li>";
-  $description .= "<li>Secret key: " . variable_get('smssync_secret_key', "123456") . "</li>";
-  $description .= "<li>Sync URL: " . $frontpage . 'smssync/listen' . "</li>";
-  $description .= "<li>Unique ID: " . $user->uid . "</li>";
+  $description .= "<li>" . t("Title: SMSsync (actually you can call this whatever you want to)") . "</li>";
+  $description .= "<li>" . t("Secret key") . ": " . variable_get('smssync_secret_key', "123456") . "</li>";
+  $description .= "<li>" . t("Sync URL") . ": " . $frontpage . 'smssync/listen' . "</li>";
+  $description .= "<li>" . t("Unique ID") . ": " . $user->uid . "</li>";
   $description .= "</ul>";
-  $description .= "The title of your SMS messages will be in this format:<br />";
-
+ 
+  $description .= "<p>" . t("Alternatively scan this code and SMSSync will automatically configure itself for you") . "<img src='https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl=http://smssync.ushahidi.com/%2F&choe=UTF-8' title='Link to http://smssync.ushahidi.com/' />" . "</p>";
+  
+  $description .= t("The title of your SMS messages will be in this format") . ":<br />";
   $description .= variable_get('smssync_title_format', "SMS Message from @from");
    
    if (variable_get('clean_url', 0) == 0) 
@@ -117,7 +119,7 @@ function smssync_settings_form($form, &$form_state)
 {
   $form = array();
 
-  $description = "The format in which to save the title of the SMS message. Available tokens are";
+  $description = t("The format in which to save the title of the SMS message. Available tokens are");
   $description .= "<ul>";
   $description .= "<li>@from</li>";
   $description .= "<li>@message_id</li>";
@@ -241,7 +243,7 @@ function save_message()
   }
   else
   {
-    $error = 'The from variable was not set';
+    $error = t('The from variable was not set');
   }
 
   /**
@@ -253,7 +255,7 @@ function save_message()
   }
   else
   {
-    $error = 'The message variable was not set';
+    $error = t('The message variable was not set');
   }
 
   /**
@@ -325,7 +327,7 @@ function save_message()
       }
       else
       {
-          $error = "The secret value sent from the device does not match the one on the server";
+          $error = t("Invalid authentication password");
       }
 
       // now let's write the info sent by SMSsync
@@ -377,7 +379,7 @@ function save_message()
       {
         // Invalid uid
         $success = FALSE;
-        $error = "Invalid user!";
+        $error = t("Invalid or missing Unique ID");
       }
 
       $response = json_encode([
@@ -394,26 +396,26 @@ function save_message()
   {
 		$success = FALSE;
 		
-		$error = "Critical data missing: ";
+		$error = t("Critical data missing: ");
 		
 		if(empty($from))
 		{
-			$error .= "'FROM' field is empty. ";		
+			$error .= t("'FROM' field is empty. ");		
 		}
 		
     if(empty($message))
     {
-    	$error .= "'MESSAGE' field is empty. ";
+    	$error .= t("'MESSAGE' field is empty. ");
     }
     
     if(empty($sent_timestamp))
     {
-    	$error .= "'SENT_TIMESTAMP' field is empty. ";
+    	$error .= t("'SENT_TIMESTAMP' field is empty. ");
     }
     
     if(empty($message_id))
     {
-    	$error .= "'MESSAGE_ID' field is empty.";
+    	$error .= t("'MESSAGE_ID' field is empty.");
     }
 		
 		$response = json_encode([
@@ -506,3 +508,4 @@ function test_smssync()
 {
 	//curl --data "from=09048370465&message=sampletextmessage&secret=123456&device_id=1&sent_timestamp=1234567&message_id=67890" http://localhost/seven/?q=smssync/listen
 }
+
