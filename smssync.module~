@@ -241,7 +241,7 @@ function save_message()
   }
   else
   {
-    $error = t('The from variable was not set');
+    $error = 'The from variable was not set';
   }
 
   /**
@@ -253,7 +253,7 @@ function save_message()
   }
   else
   {
-    $error = t('The message variable was not set');
+    $error = 'The message variable was not set';
   }
 
   /**
@@ -325,7 +325,7 @@ function save_message()
       }
       else
       {
-          $error = t("Invalid authentication password");
+          $error = "The secret value sent from the device does not match the one on the server";
       }
 
       // now let's write the info sent by SMSsync
@@ -377,7 +377,7 @@ function save_message()
       {
         // Invalid uid
         $success = FALSE;
-        $error = t("Invalid or missing Unique ID");
+        $error = "Invalid user!";
       }
 
       $response = json_encode([
@@ -394,26 +394,26 @@ function save_message()
   {
 		$success = FALSE;
 		
-		$error = t("Critical data missing: ");
+		$error = "Critical data missing: ";
 		
 		if(empty($from))
 		{
-			$error .= t("'FROM' field is empty. ");		
+			$error .= "'FROM' field is empty. ";		
 		}
 		
     if(empty($message))
     {
-    	$error .= t("'MESSAGE' field is empty. ");
+    	$error .= "'MESSAGE' field is empty. ";
     }
     
     if(empty($sent_timestamp))
     {
-    	$error .= t("'SENT_TIMESTAMP' field is empty. ");
+    	$error .= "'SENT_TIMESTAMP' field is empty. ";
     }
     
     if(empty($message_id))
     {
-    	$error .= t("'MESSAGE_ID' field is empty.");
+    	$error .= "'MESSAGE_ID' field is empty.";
     }
 		
 		$response = json_encode([
