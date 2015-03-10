@@ -3,9 +3,6 @@ description = Module for saving messages from SMSsync by Ushahidi into Drupal
 package = Ushahidi
 core = 7.x
 
-files[] = smssync.install
-files[] = smssync.module
-
 #dependencies[] = cck
 
 configure = admin/config/smssync
