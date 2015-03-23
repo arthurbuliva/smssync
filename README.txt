@@ -1,7 +1,9 @@
 SMSsync
 =======
 
-A module to work with SMSsync android app, that makes the app post SMS messages into Drupal
+A module to work with SMSsync android app.
+
+This module enables the android app to post SMS messages into Drupal
 
 Requirements
 =======
@@ -14,6 +16,13 @@ Installation and Usage
 
 * Install and enable the module.
 
-* The installation will set up two new content types, "SMS message" which will hold the incoming messages, and "SMS message outbox" which will hold the messages to be sent
-  
-* The module will provide a link in the navigation menu. The link will contain details that will help in configuring the module to work with SMSSync app. Please see http://smssync.ushahidi.com/configure/ on how to configure SMSSync android app.
+* The installation will set up two new content types, 
+  - "SMS message" which will hold the incoming messages, and 
+  - "SMS message outbox" which will hold the messages to be sent
+
+
+* The module will provide a link in the navigation menu. 
+  This link will help in configuring the module to work with SMSSync app. 
+  See 
+      http://smssync.ushahidi.com/configure/ 
+    for details on how to configure SMSSync android app.

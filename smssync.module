@@ -29,19 +29,32 @@ function smssync_permission() {
 }
 
 /**
- * Implements hook_init().
+ * Implements hook_requirements().
  */
-function smssync_init() {
-  if (variable_get('clean_url', 0) == 0) {
-    drupal_set_message(('Clean URLs are required in order to correctly run SMSSync. '
-      . 'Please ' . l(t("enable clean URLs"), "admin/config/search/clean-urls")
-      . ' or contact your site administrator'), 'warning');
-  }
+function smssync_requirements($phase) {
+  $requirements = array();
 
-  if (variable_get('smssync_autorefresh_interval', "0") > 0) {
-    // drupal_set_message(t"This page will reload in "
-    // . variable_get('smssync_autorefresh_interval', "0") . " seconds...");
+  if($phase == 'runtime') {
+    if (variable_get('clean_url', 0) == 0) {
+      $smssync_cleanurl_message = t('Clean URLs are required in order to correctly run SMSSync. ');
+      $smssync_cleanurl_message .= 'Please ' . l(t("enable clean URLs"), "admin/config/search/clean-urls");
+      $smssync_cleanurl_message .= t(' or contact your site administrator');
+
+      $requirements['clean_url'] = array(
+        'title' => t('Clean URLs'),
+        'description' => $smssync_cleanurl_message,
+        'value' => t("Disabled"),
+        'severity' => REQUIREMENT_ERROR,
+      );
+    }
+
+    if (variable_get('smssync_autorefresh_interval', "0") > 0) {
+      // drupal_set_message(t"This page will reload in "
+      // . variable_get('smssync_autorefresh_interval', "0") . " seconds...");
+    }
   }
+  
+  return $requirements;
 }
 
 /**
@@ -81,11 +94,13 @@ function smssync_show_configuration() {
   global $user;
 
   $frontpage = $GLOBALS['base_root'] . base_path();
+  
+  $smssync_secret_key = check_plain(variable_get('smssync_secret_key', "123456"));
 
   $description = t("Use the following configuration options on the SMSsync app on Android:");
   $description .= "<ul>";
   $description .= "<li>" . t("Title: SMSsync (actually you can call this whatever you want to)") . "</li>";
-  $description .= "<li>" . t("Secret key") . ": " . variable_get('smssync_secret_key', "123456") . "</li>";
+  $description .= "<li>" . t("Secret key") . ": " . $smssync_secret_key . "</li>";
   $description .= "<li>" . t("Sync URL") . ": " . $frontpage . 'smssync/listen' . "</li>";
   $description .= "<li>" . t("Unique ID") . ": " . $user->uid . "</li>";
   $description .= "</ul>";
@@ -130,6 +145,8 @@ function smssync_settings_form($form, &$form_state) {
   $description .= "<li>@message_id</li>";
   $description .= "<li>@timestamp</li>";
   $description .= "</ul>";
+  
+  $smssync_secret_key = variable_get('smssync_secret_key', "123456");
 
   $form['smssync_title_format'] = array(
     '#type' => 'textfield',
@@ -144,7 +161,7 @@ function smssync_settings_form($form, &$form_state) {
   $form['smssync_secret_key'] = array(
     '#type' => 'password',
     '#title' => t('Secret key'),
-    '#default_value' => variable_get('smssync_secret_key', "123456"),
+    '#default_value' => check_plain($smssync_secret_key),
     '#size' => 50,
     '#maxlength' => 50,
     '#description' => t("The secret key. Other people call it 'Password'"),
@@ -303,7 +320,9 @@ function smssync_save_message() {
       AND (!empty($sent_timestamp))
       AND (!empty($message_id))
   ) {
-    if (($secret == variable_get('smssync_secret_key', "123456"))) {
+    $smssync_secret_key = check_plain(variable_get('smssync_secret_key', "123456"));
+    
+    if (($secret == $smssync_secret_key)) {
       $success = TRUE;
     }
     else {
@@ -453,7 +472,7 @@ function smssync_send_task() {
     "payload" => [
     "success" => $s,
     "task" => "send",
-    "secret" => variable_get('smssync_secret_key', "123456"),
+    "secret" => $smssync_secret_key = check_plain(variable_get('smssync_secret_key', "123456")),
     "messages" => array_values($reply)]
   ]);
 
