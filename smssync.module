@@ -321,78 +321,86 @@ function smssync_save_message() {
       AND (!empty($message_id))
   ) {
     $smssync_secret_key = check_plain(variable_get('smssync_secret_key', "123456"));
-    
+
     if (($secret == $smssync_secret_key)) {
       $success = TRUE;
-    }
-    else {
-      $error = t("Invalid authentication password");
-    }
 
-    // Now let's write the info sent by SMSsync.
-    $string = $message;
+      // Now let's write the info sent by SMSsync.
+      $string = $message;
 
-    $body = $string;
+      $body = $string;
 
-    // Create a new node object.
-    $node = new stdClass();
+      // Create a new node object.
+      $node = new stdClass();
 
-    // Or page, or whatever content type you like.
-    $node->type = "sms";
+      // Or page, or whatever content type you like.
+      $node->type = "smssync_sms";
 
-    // Set some default values.
-    node_object_prepare($node);
+      // Set some default values.
+      node_object_prepare($node);
 
-    // Prepare the title.
-    $variables = array(
-      '@from' => $from,
-      '@message_id' => $message_id,
-      '@timestamp' => $sent_timestamp,
-    );
+      // Prepare the title.
+      $variables = array(
+        '@from' => $from,
+        '@message_id' => $message_id,
+        '@timestamp' => $sent_timestamp,
+      );
 
-    $node->title = format_string(variable_get('smssync_title_format', "SMS Message from @from"), $variables);
+      $node->title = format_string(variable_get('smssync_title_format', "SMS Message from @from"), $variables);
 
-    // Or e.g. 'en' if locale is enabled.
-    $node->language = LANGUAGE_NONE;
+      // Or e.g. 'en' if locale is enabled.
+      $node->language = LANGUAGE_NONE;
 
-    // UID of the author of the node;
-    // We need a valid registered user in order to write the nodes.
-    $node->uid = $device_id;
+      // UID of the author of the node;
+      // We need a valid registered user in order to write the nodes.
+      $node->uid = $device_id;
 
-    $node->body[$node->language][0]['value'] = $body;
-    $node->body[$node->language][0]['summary'] = text_summary($body);
-    $node->body[$node->language][0]['format'] = 'filtered_html';
+      $node->body[$node->language][0]['value'] = $body;
+      $node->body[$node->language][0]['summary'] = text_summary($body);
+      $node->body[$node->language][0]['format'] = 'filtered_html';
 
-    $node->smssync_timestamp[$node->language][0]['value'] = $sent_timestamp;
-    $node->smssync_message_from[$node->language][0]['value'] = $from;
-    $node->smssync_message_id[$node->language][0]['value'] = $message_id;
-    $node->smssync_device_id[$node->language][0]['value'] = $device_id;
+      $node->smssync_timestamp[$node->language][0]['value'] = $sent_timestamp;
+      $node->smssync_message_from[$node->language][0]['value'] = $from;
+      $node->smssync_message_id[$node->language][0]['value'] = $message_id;
+      $node->smssync_device_id[$node->language][0]['value'] = $device_id;
 
-    // You may pathauto, which would override the below path.
-    $path = "[$from] - " . date('Y-m-d H:i:s');
-    $node->path = array('alias' => $path);
+      // You may pathauto, which would override the below path.
+      $path = "[$from] - " . date('Y-m-d H:i:s');
+      $node->path = array('alias' => $path);
 
-    $account = user_load($device_id);
+      $account = user_load($device_id);
 
-    if ($account->uid == $device_id) {
-      // Valid uid.
-      if ($node === node_submit($node)) {
-        // Prepare node for saving.
-        node_save($node);
+      if ($account->uid == $device_id) {
+        // Valid uid.
+        if ($node === node_submit($node)) {
+          // Prepare node for saving.
+          node_save($node);
+        }
       }
+      else {
+        // Invalid uid.
+        $success = FALSE;
+        $error = t("Invalid or missing Unique ID");
+      }
+
+      $response = json_encode([
+          "payload" => [
+          "success" => $success,
+          "error" => $error
+          ]
+      ]);
     }
     else {
-      // Invalid uid.
       $success = FALSE;
-      $error = t("Invalid or missing Unique ID");
-    }
+      $error = t("Invalid authentication password");
 
-    $response = json_encode([
-        "payload" => [
-        "success" => $success,
-        "error" => $error
-        ]
-    ]);
+      $response = json_encode([
+          "payload" => [
+          "success" => $success,
+          "error" => $error
+          ]
+      ]);
+    }
 
     smssync_send_response($response);
   }
