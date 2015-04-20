@@ -107,17 +107,15 @@ function smssync_show_configuration() {
   $description .= "<li>" . t("Unique ID") . ": " . $user->uid . "</li>";
   $description .= "</ul>";
 
-  $qr_data = "{";
-  $qr_data .= "\"sync_urls\": [";
-  $qr_data .= "{";
-  $qr_data .= "\"title\": \"$site_name\",";
-  $qr_data .= "\"secret_key\": \"$smssync_secret_key\",";
-  $qr_data .= "\"keywords\": [],";
-  $qr_data .= "\"url\": \"$frontpage" . "smssync/listen\",";
-  $qr_data .= "\"enabled\": true";
-  $qr_data .= "}";
-  $qr_data .= "]";
-  $qr_data .= "}";
+  $qr_data = json_encode(
+  [
+    "sync_urls" => [[
+    "title" => $site_name,
+    "secret_key" => $smssync_secret_key,
+    "keywords" => [],
+    "url" => $frontpage . 'smssync/listen',
+    "enabled" => TRUE]]
+  ], JSON_UNESCAPED_SLASHES);
 
   $description .= "<p>Alternatively scan this code and SMSSync will "
           . "automatically configure itself for you"
