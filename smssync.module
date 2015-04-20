@@ -94,7 +94,9 @@ function smssync_show_configuration() {
   global $user;
 
   $frontpage = $GLOBALS['base_root'] . base_path();
-  
+
+
+  $site_name = variable_get('site_name');
   $smssync_secret_key = check_plain(variable_get('smssync_secret_key', "123456"));
 
   $description = t("Use the following configuration options on the SMSsync app on Android:");
@@ -105,10 +107,22 @@ function smssync_show_configuration() {
   $description .= "<li>" . t("Unique ID") . ": " . $user->uid . "</li>";
   $description .= "</ul>";
 
+  $qr_data = "{";
+  $qr_data .= "\"sync_urls\": [";
+  $qr_data .= "{";
+  $qr_data .= "\"title\": \"$site_name\",";
+  $qr_data .= "\"secret_key\": \"$smssync_secret_key\",";
+  $qr_data .= "\"keywords\": [],";
+  $qr_data .= "\"url\": \"$frontpage" . "smssync/listen\",";
+  $qr_data .= "\"enabled\": true";
+  $qr_data .= "}";
+  $qr_data .= "]";
+  $qr_data .= "}";
+
   $description .= "<p>Alternatively scan this code and SMSSync will "
           . "automatically configure itself for you"
           . "<img src='https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl="
-          . "http://smssync.ushahidi.com/%2F&choe=UTF-8' "
+          . "$qr_data&choe=UTF-8' "
           . "title='Link to http://smssync.ushahidi.com/' /></p>";
 
   $description .= t("The title of your SMS messages will be in this format") . ":<br />";
