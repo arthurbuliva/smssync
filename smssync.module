@@ -114,6 +114,7 @@ function smssync_show_configuration() {
     "secret_key" => $smssync_secret_key,
     "keywords" => [],
     "url" => $frontpage . 'smssync/listen',
+    "uniqueid" => $user->uid,
     "enabled" => TRUE]]
   ], JSON_UNESCAPED_SLASHES);
 
